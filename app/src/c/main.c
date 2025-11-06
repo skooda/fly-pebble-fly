@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include <math.h>
 
 static Window *_window;
 static Layer *_canvas_layer;
@@ -19,6 +20,7 @@ static int16_t _att_z;
 //---------------
 static const uint16_t _circle_radius = 15;
 static const uint16_t _sensitivity = 10;
+static const float PI = 3.14159265f;
 
 //---------------
 // Handlers
@@ -65,9 +67,27 @@ static void _draw_circle(Layer *layer, GContext *ctx) {
   graphics_fill_circle(ctx, GPoint(circle_x, circle_y), _circle_radius);
 }
 
+static void _draw_angled_line(Layer *layer, GContext *ctx, float angle_rad, int16_t cx, int16_t cy) {
+  // Draw a line at a specific angle from the center
+  int16_t length = 100; // Length of the line
+  GPoint start = GPoint(
+    cx - (int16_t)(length * cosf(angle_rad)),
+    cy - (int16_t)(length * sinf(angle_rad))
+  );
+  GPoint end = GPoint(
+    cx + (int16_t)(length * cosf(angle_rad)),
+    cy + (int16_t)(length * sinf(angle_rad))
+  );
+  graphics_draw_line(ctx, start, end);
+}
+
 static void _draw_horizon(Layer *layer, GContext *ctx) {
-  int16_t horizon_y = _center_y + (_att_y/_sensitivity);
-  graphics_draw_line(ctx, GPoint(0, horizon_y), GPoint(layer_get_bounds(layer).size.w, horizon_y));
+  int16_t horizon_y = _center_y + (_att_z/_sensitivity);
+  int16_t horizon_angle = (-_att_x / 16);
+  int16_t horizon_angle_rad = horizon_angle * (PI / 180.0f);
+  // Draw horizon line with rotation based on accelerometer data
+  _draw_angled_line(layer, ctx, horizon_angle * (PI / 180.0f), _center_x, horizon_y);
+  
 }
 
 static void _draw(Layer *layer, GContext *ctx) {
