@@ -26,12 +26,12 @@
     },
     "codespaces": {
       "openFiles": [
-        "src/c/myfirstproject.c"
+        "src/c/main.c"
       ]
     }
   },
 
-  "workspaceFolder": "/workspaces/codespaces-pebble/myfirstproject",
+  "workspaceFolder": "/workspaces/fly-pebble-fly/app",
   "containerEnv": {
     "LOCALWORKSPACEFOLDERBASENAME": "${localWorkspaceFolderBasename}",
     "LOCALWORKSPACEFOLDER": "${localWorkspaceFolder}",

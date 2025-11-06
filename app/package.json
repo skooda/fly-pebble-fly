@@ -1,13 +1,13 @@
 {
-  "name": "myfirstproject",
-  "author": "MakeAwesomeHappen",
+  "name": "fly-pebble-fly",
+  "author": "v3l.cz",
   "version": "1.0.0",
   "keywords": ["pebble-app"],
   "private": true,
   "dependencies": {},
   "pebble": {
-    "displayName": "myfirstproject",
-    "uuid": "00000000-0000-0000-0000-000000000001",
+    "displayName": "Fly Pebble Fly",
+    "uuid": "e2edfa55-b26d-47b3-83b6-28ab1e3184d3",
     "sdkVersion": "3",
     "enableMultiJS": true,
     "targetPlatforms": [
