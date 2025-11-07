@@ -21,7 +21,7 @@ static float _horizon_angle_rad;
 //---------------
 // Configurations
 //---------------
-static const uint16_t _display_diameter = 140;
+static const uint16_t _display_diameter = 130;
 static const uint16_t _sensitivity = 10;
 static const float PI = 3.14159265f;
 
@@ -98,32 +98,57 @@ static void _draw_horizon(GContext *ctx) {
 
   // Draw horizon line with rotation based on accelerometer data
   graphics_context_set_stroke_width(ctx, 2);
-  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/2);
-  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/2);
+  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter);
   graphics_context_set_stroke_width(ctx, 1);
 
   // Draw horizon segments by 30-degree increments
-  _draw_angled_line(ctx, _horizon_angle_rad+(PI/6), _center_x, horizon_y, _display_diameter/2);
-  _draw_angled_line(ctx, _horizon_angle_rad+(2*PI/6), _center_x, horizon_y, _display_diameter/2);
-  _draw_angled_line(ctx, _horizon_angle_rad+(4*PI/6), _center_x, horizon_y, _display_diameter/2);
-  _draw_angled_line(ctx, _horizon_angle_rad+(5*PI/6), _center_x, horizon_y, _display_diameter/2);
+  _draw_angled_line(ctx, _horizon_angle_rad+(PI/6), _center_x, horizon_y, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(2*PI/6), _center_x, horizon_y, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(4*PI/6), _center_x, horizon_y, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(5*PI/6), _center_x, horizon_y, _display_diameter);
 
   // Draw nose attitude horizontal lines
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, 10, -25);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, 20, -40);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, 10, -25);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, 20, -40);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/14, -_display_diameter/6);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/8, -_display_diameter/4);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/14, -_display_diameter/6);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/8, -_display_diameter/4);
  
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, 10, 25);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, 20, 40);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, 10, 25);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, 20, 40);
- 
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/15, _display_diameter/6);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/10, _display_diameter/4);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/15, _display_diameter/6);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/10, _display_diameter/4);
+}
+
+static void _draw_crown(GContext *ctx) {
+  // Draw crown indicator at the top center
+  GPoint crown_top = GPoint(_center_x, _center_y - (_display_diameter / 2) + 15);
+  GPoint crown_left = GPoint(_center_x - 5, crown_top.y + 10);
+  GPoint crown_right = GPoint(_center_x + 5, crown_top.y + 10);
+
+  graphics_draw_line(ctx, crown_top, crown_left);
+  graphics_draw_line(ctx, crown_top, crown_right);
+  graphics_draw_line(ctx, crown_left, crown_right);
+}
+
+static void _draw_border(GContext *ctx) {
+  graphics_context_set_stroke_color(ctx, GColorWhite);
+  graphics_context_set_stroke_width(ctx, (int)(_display_diameter * 0.2f)+20);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2+10);
+
+  graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2+30);
+  
+  graphics_context_set_stroke_width(ctx, 1);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2.4);
+
 } 
 
 static void _draw(Layer *layer, GContext *ctx) {
   _clear_screen(layer, ctx);
   _draw_horizon(ctx);
+  _draw_crown(ctx);
+  _draw_border(ctx);
 }
 
 //---------------
