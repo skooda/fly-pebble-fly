@@ -22,6 +22,7 @@ static float _horizon_angle_rad;
 // Configurations
 //---------------
 static const uint16_t _display_diameter = 130;
+static const uint16_t _border_width = 16;
 static const uint16_t _sensitivity = 10;
 static const float PI = 3.14159265f;
 
@@ -42,6 +43,7 @@ static void _handle_accelerometer(AccelData *data, uint32_t num_samples) {
   int16_t horizon_angle = (-_att_x / 16);
   _horizon_angle_rad = horizon_angle * (PI / 180.0f);
   
+
   layer_mark_dirty(_canvas_layer);
 }
 
@@ -55,12 +57,15 @@ static void _clear_screen(Layer *layer, GContext *ctx) {
 }
 
 
-static void _draw_angled_line(GContext *ctx, float angle_rad, int16_t sx, int16_t sy, int16_t length) {
+static void _draw_angled_line(GContext *ctx, float angle_rad, int16_t sx, int16_t sy, int16_t start_at, int16_t length) {
   // Draw a line at a specific angle
-  GPoint start = GPoint(sx, sy);
+  GPoint start = GPoint(
+    sx + (int16_t)(start_at * cosf(angle_rad)),
+    sy + (int16_t)(start_at * sinf(angle_rad))
+  );
   GPoint end = GPoint(
-    sx + (int16_t)(length * cosf(angle_rad)),
-    sy + (int16_t)(length * sinf(angle_rad))
+    start.x + (int16_t)(length * cosf(angle_rad)),
+    start.y + (int16_t)(length * sinf(angle_rad))
   );
   graphics_draw_line(ctx, start, end);
 }
@@ -84,17 +89,18 @@ static void _draw_angled_offset_line(GContext *ctx, float angle_rad, int16_t sx,
 static void _draw_horizon(GContext *ctx) {
   int16_t horizon_y = _center_y + (_att_z/_sensitivity);
 
+
   // Draw horizon line with rotation based on accelerometer data
   graphics_context_set_stroke_width(ctx, 2);
-  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter);
-  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, horizon_y, 0, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, 0, _display_diameter);
   graphics_context_set_stroke_width(ctx, 1);
 
   // Draw horizon segments by 30-degree increments
-  _draw_angled_line(ctx, _horizon_angle_rad+(PI/6), _center_x, horizon_y, _display_diameter);
-  _draw_angled_line(ctx, _horizon_angle_rad+(2*PI/6), _center_x, horizon_y, _display_diameter);
-  _draw_angled_line(ctx, _horizon_angle_rad+(4*PI/6), _center_x, horizon_y, _display_diameter);
-  _draw_angled_line(ctx, _horizon_angle_rad+(5*PI/6), _center_x, horizon_y, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(PI/6), _center_x, horizon_y, 0, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(2*PI/6), _center_x, horizon_y, 0, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(4*PI/6), _center_x, horizon_y, 0, _display_diameter);
+  _draw_angled_line(ctx, _horizon_angle_rad+(5*PI/6), _center_x, horizon_y, 0, _display_diameter);
 
   // Draw nose attitude horizontal lines
   int16_t line_offset = _display_diameter/8;
@@ -116,7 +122,7 @@ static void _draw_horizon(GContext *ctx) {
 
 static void _draw_crown(GContext *ctx) {
   // Draw crown indicator at the top center
-  GPoint crown_top = GPoint(_center_x, _center_y - (_display_diameter / 2) + 15);
+  GPoint crown_top = GPoint(_center_x, _center_y - (_display_diameter / 2) + 17);
   GPoint crown_left = GPoint(_center_x - 5, crown_top.y + 10);
   GPoint crown_right = GPoint(_center_x + 5, crown_top.y + 10);
 
@@ -126,15 +132,40 @@ static void _draw_crown(GContext *ctx) {
 }
 
 static void _draw_border(GContext *ctx) {
+  int16_t border_offset = _display_diameter/2 - _border_width + 1;
+
   graphics_context_set_stroke_color(ctx, GColorWhite);
-  graphics_context_set_stroke_width(ctx, (int)(_display_diameter * 0.2f)+20);
-  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2+10);
+  graphics_context_set_stroke_width(ctx, _border_width*2);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2);
 
   graphics_context_set_stroke_color(ctx, GColorBlack);
-  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2+30);
+  graphics_context_set_stroke_width(ctx, 100);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2+50);
   
   graphics_context_set_stroke_width(ctx, 1);
-  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2.4);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), border_offset);
+
+  // Draw border horizon
+  graphics_context_set_stroke_width(ctx, 2);
+  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, _center_y, border_offset, _border_width);
+  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, _center_y, border_offset, _border_width);
+
+  // Draw border lines 
+  graphics_context_set_stroke_width(ctx, 3);
+  _draw_angled_line(ctx, 0, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, PI, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*7, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*8, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*9, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*10, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*11, _center_x, _center_y, border_offset, _border_width*0.6);
+
+  graphics_context_set_stroke_width(ctx, 2);
+  _draw_angled_line(ctx, PI/18*25, _center_x, _center_y, border_offset, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*26, _center_x, _center_y, border_offset, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*28, _center_x, _center_y, border_offset, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*29, _center_x, _center_y, border_offset, _border_width*0.4);
+
 
 } 
 
