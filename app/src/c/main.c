@@ -120,19 +120,47 @@ static void _draw_horizon(GContext *ctx) {
   
 }
 
-static void _draw_crown(GContext *ctx) {
-  // Draw crown indicator at the top center
-  GPoint crown_top = GPoint(_center_x, _center_y - (_display_diameter / 2) + 17);
-  GPoint crown_left = GPoint(_center_x - 5, crown_top.y + 10);
-  GPoint crown_right = GPoint(_center_x + 5, crown_top.y + 10);
+static GPoint rotate_point(GPoint p, float angle_rad) {
+  int16_t x_new = (int16_t)(p.x * cosf(angle_rad) - p.y * sinf(angle_rad));
+  int16_t y_new = (int16_t)(p.x * sinf(angle_rad) + p.y * cosf(angle_rad));
+  return GPoint(x_new + _center_x, y_new + _center_y);
+}
 
-  graphics_draw_line(ctx, crown_top, crown_left);
-  graphics_draw_line(ctx, crown_top, crown_right);
-  graphics_draw_line(ctx, crown_left, crown_right);
+static void _draw_filled_triangle(GContext *ctx, GPoint p1, GPoint p2, GPoint p3) {
+  GPathInfo triangle_info = {
+    .num_points = 3,
+    .points = (GPoint []) { p1, p2, p3 }
+  };
+  GPath *triangle_path = gpath_create(&triangle_info);
+
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  gpath_draw_filled(ctx, triangle_path);
+
+  graphics_context_set_stroke_color(ctx, GColorBlack);
+  gpath_draw_outline(ctx, triangle_path);
+
+  gpath_destroy(triangle_path);
+}
+
+static void _draw_crown(GContext *ctx) {
+  int16_t base_y = _center_y - (_display_diameter / 2) + 17;
+
+  GPoint crown_top = GPoint(0, base_y - _center_y);
+  GPoint crown_left = GPoint(-5, crown_top.y + 10);
+  GPoint crown_right = GPoint(5, crown_top.y + 10);
+
+  GPoint rotated_top = rotate_point(crown_top, _horizon_angle_rad);
+  GPoint rotated_left = rotate_point(crown_left, _horizon_angle_rad);
+  GPoint rotated_right = rotate_point(crown_right, _horizon_angle_rad);
+  
+  graphics_draw_line(ctx, rotated_top, rotated_left);
+  graphics_draw_line(ctx, rotated_top, rotated_right);
+  graphics_draw_line(ctx, rotated_left, rotated_right);
+  _draw_filled_triangle(ctx, rotated_top, rotated_left, rotated_right);
 }
 
 static void _draw_border(GContext *ctx) {
-  int16_t border_offset = _display_diameter/2 - _border_width + 1;
+  int16_t border_offset = _display_diameter/2 - _border_width;
 
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_context_set_stroke_width(ctx, _border_width*2);
@@ -143,28 +171,28 @@ static void _draw_border(GContext *ctx) {
   graphics_draw_circle(ctx, GPoint(_center_x, _center_y), _display_diameter/2+50);
   
   graphics_context_set_stroke_width(ctx, 1);
-  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), border_offset);
+  graphics_draw_circle(ctx, GPoint(_center_x, _center_y), border_offset+1);
 
   // Draw border horizon
   graphics_context_set_stroke_width(ctx, 2);
-  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, _center_y, border_offset, _border_width);
-  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, _center_y, border_offset, _border_width);
+  _draw_angled_line(ctx, _horizon_angle_rad, _center_x, _center_y, border_offset+2, _border_width);
+  _draw_angled_line(ctx, _horizon_angle_rad+PI, _center_x, _center_y, border_offset+2, _border_width);
 
   // Draw border lines 
   graphics_context_set_stroke_width(ctx, 3);
-  _draw_angled_line(ctx, 0, _center_x, _center_y, border_offset, _border_width*0.6);
-  _draw_angled_line(ctx, PI, _center_x, _center_y, border_offset, _border_width*0.6);
-  _draw_angled_line(ctx, PI/6*7, _center_x, _center_y, border_offset, _border_width*0.6);
-  _draw_angled_line(ctx, PI/6*8, _center_x, _center_y, border_offset, _border_width*0.6);
-  _draw_angled_line(ctx, PI/6*9, _center_x, _center_y, border_offset, _border_width*0.6);
-  _draw_angled_line(ctx, PI/6*10, _center_x, _center_y, border_offset, _border_width*0.6);
-  _draw_angled_line(ctx, PI/6*11, _center_x, _center_y, border_offset, _border_width*0.6);
+  _draw_angled_line(ctx, 0, _center_x, _center_y, border_offset+3, _border_width*0.6);
+  _draw_angled_line(ctx, PI, _center_x, _center_y, border_offset+3, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*7, _center_x, _center_y, border_offset+3, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*8, _center_x, _center_y, border_offset+3, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*9, _center_x, _center_y, border_offset+3, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*10, _center_x, _center_y, border_offset+3, _border_width*0.6);
+  _draw_angled_line(ctx, PI/6*11, _center_x, _center_y, border_offset+3, _border_width*0.6);
 
   graphics_context_set_stroke_width(ctx, 2);
-  _draw_angled_line(ctx, PI/18*25, _center_x, _center_y, border_offset, _border_width*0.4);
-  _draw_angled_line(ctx, PI/18*26, _center_x, _center_y, border_offset, _border_width*0.4);
-  _draw_angled_line(ctx, PI/18*28, _center_x, _center_y, border_offset, _border_width*0.4);
-  _draw_angled_line(ctx, PI/18*29, _center_x, _center_y, border_offset, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*25, _center_x, _center_y, border_offset+3, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*26, _center_x, _center_y, border_offset+3, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*28, _center_x, _center_y, border_offset+3, _border_width*0.4);
+  _draw_angled_line(ctx, PI/18*29, _center_x, _center_y, border_offset+3, _border_width*0.4);
 
 
 } 
