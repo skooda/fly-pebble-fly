@@ -28,18 +28,6 @@ static const float PI = 3.14159265f;
 //---------------
 // Handlers
 ///---------------
-static void _handle_click_select(ClickRecognizerRef recognizer, void *context) {
-  // Todo: Implement select button functionality
-}
-
-static void _handle_click_up(ClickRecognizerRef recognizer, void *context) {
-  // Todo: Implement up button functionality
-}
-
-static void _handle_click_down(ClickRecognizerRef recognizer, void *context) {
-  // Todo: Implement down button functionality
-}
-
 static void _handle_accelerometer(AccelData *data, uint32_t num_samples) {
   int32_t sum_x = 0, sum_y = 0, sum_z = 0;
   for (uint32_t i = 0; i < num_samples; i++) {
@@ -109,15 +97,21 @@ static void _draw_horizon(GContext *ctx) {
   _draw_angled_line(ctx, _horizon_angle_rad+(5*PI/6), _center_x, horizon_y, _display_diameter);
 
   // Draw nose attitude horizontal lines
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/14, -_display_diameter/6);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/8, -_display_diameter/4);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/14, -_display_diameter/6);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/8, -_display_diameter/4);
- 
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/15, _display_diameter/6);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, _display_diameter/10, _display_diameter/4);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/15, _display_diameter/6);
-  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, _display_diameter/10, _display_diameter/4);
+  int16_t line_offset = _display_diameter/8;
+  int16_t line_width = _display_diameter/24;
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, line_width, -line_offset);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, line_width*2, -line_offset*2);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, line_width, line_offset);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, line_width*2, line_offset*2);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad+PI, _center_x, horizon_y, line_width*3, -line_offset*3);
+
+
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, line_width, line_offset);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, line_width*2, line_offset*2);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, line_width*3, line_offset*3);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, line_width, -line_offset);
+  _draw_angled_offset_line(ctx, _horizon_angle_rad, _center_x, horizon_y, line_width*2, -line_offset*2);
+  
 }
 
 static void _draw_crown(GContext *ctx) {
@@ -155,9 +149,6 @@ static void _draw(Layer *layer, GContext *ctx) {
 // Initialization
 //---------------
 static void _click_config_provider(void *context) {
-  window_single_click_subscribe(BUTTON_ID_SELECT, _handle_click_select);
-  window_single_click_subscribe(BUTTON_ID_UP, _handle_click_up);
-  window_single_click_subscribe(BUTTON_ID_DOWN, _handle_click_down);
   accel_data_service_subscribe(5, _handle_accelerometer);
   accel_service_set_sampling_rate(ACCEL_SAMPLING_100HZ);
 }
