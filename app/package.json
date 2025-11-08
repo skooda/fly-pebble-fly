@@ -1,13 +1,13 @@
 {
-  "name": "fly-pebble-fly",
+  "name": "pebble-horizon",
   "author": "v3l.cz",
   "version": "1.0.0",
   "keywords": ["pebble-app"],
   "private": true,
   "dependencies": {},
   "pebble": {
-    "displayName": "Fly Pebble Fly",
-    "uuid": "e2edfa55-b26d-47b3-83b6-28ab1e3184d3",
+    "displayName": "Pebble horizon",
+    "uuid": "361a694c-eaf9-4e96-9843-e7d4f5e4bbed",
     "sdkVersion": "3",
     "enableMultiJS": true,
     "targetPlatforms": [
