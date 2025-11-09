@@ -310,6 +310,7 @@ static void _init(void) {
 static void _window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+  light_enable(true);
 
   // calculate center of screen
   _center_x = bounds.size.w / 2;
@@ -325,6 +326,7 @@ static void _window_load(Window *window) {
 static void _window_unload(Window *window) {
   layer_destroy(_canvas_layer);
   accel_data_service_unsubscribe();
+  light_enable(false);
 }
 
 static void _destroy(void) {
